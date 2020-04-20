@@ -207,8 +207,8 @@ function processSingleOrder (orderData, config, job, done, logger = console) {
             shippingAddressInfo['addressInformation']['shippingAddress'] = shippingAddressInfo['addressInformation']['billingAddress']
           }
 
-          logger.info(THREAD_ID + '< Billing info', billingAddressInfo)
-          api.cart.billingAddress(null, cartId, billingAddressInfo, isThisAuthOrder).then((result) => {
+          // logger.info(THREAD_ID + '< Billing info', billingAddressInfo)
+          // api.cart.billingAddress(null, cartId, billingAddressInfo, isThisAuthOrder).then((result) => {
             logger.info(THREAD_ID + '< Billing address assigned', result)
             logger.info(THREAD_ID + '< Shipping info', shippingAddressInfo)
             api.cart.shippingInformation(null, cartId, shippingAddressInfo, isThisAuthOrder).then((result) => {
@@ -256,11 +256,11 @@ function processSingleOrder (orderData, config, job, done, logger = console) {
               if (job) job.attempts(3).backoff({ delay: 60 * 1000, type: 'fixed' }).save()
               return done(new Error('Error while adding shipping address', errors));
             })
-          }).catch((errors) => {
-            logger.error('Error while adding billing address', errors)
-            if (job) job.attempts(3).backoff({ delay: 60 * 1000, type: 'fixed' }).save()
-            return done(new Error('Error while adding billing address', errors));
-          })
+          // }).catch((errors) => {
+          //   logger.error('Error while adding billing address', errors)
+          //   if (job) job.attempts(3).backoff({ delay: 60 * 1000, type: 'fixed' }).save()
+          //   return done(new Error('Error while adding billing address', errors));
+          // })
         }).catch((errors) => {
           logger.error('Error while synchronizing country list', errors)
           if (job) job.attempts(3).backoff({ delay: 30 * 1000, type: 'fixed' }).save()
