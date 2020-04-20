@@ -1,13 +1,13 @@
-version: '3.0'
+version: '3.4'
 services:
-  es1:
-    container_name: elasticsearch
+  elasticsearch:
     build: docker/elasticsearch/
     ulimits:
       memlock:
         soft: -1
-        hard: -1    
+        hard: -1
     volumes:
+      - /path/to/elastic:/path/to/elasticsearch/data
       - ./docker/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     ports:
       - '9200:9200'
@@ -18,19 +18,44 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xmx512m -Xms512m"
 
-  kibana:
-    build: docker/kibana/
-    volumes:
-      - ./docker/kibana/config/:/usr/share/kibana/config:ro
-    ports:
-      - '5601:5601'
-    depends_on:
-      - es1
-
   redis:
     image: 'redis:4-alpine'
     ports:
       - '6379:6379'
 
-volumes:
-  esdat1:
+  vue-storefront-api:
+    build:
+      context: .
+      dockerfile: docker/vue-storefront-api/Dockerfile
+    depends_on:
+      - elasticsearch
+      - redis
+    env_file: docker/vue-storefront-api/default.env
+    environment:
+      VS_ENV: prod
+    volumes:
+      - './config:/var/www/config'
+      - './ecosystem.json:/var/www/ecosystem.json'
+      - './migrations:/var/www/migrations'
+      - './package.json:/var/www/package.json'
+      - './babel.config.js:/var/www/babel.config.js'
+      - './tsconfig.json:/var/www/tsconfig.json'
+      - './nodemon.json:/var/www/nodemon.json'
+      - './scripts:/var/www/scripts'
+      - './src:/var/www/src'
+      - './var:/var/www/var'
+      - './path/to/media:/path/to/media'
+    tmpfs:
+      - /var/www/dist
+    ports:
+      - '8080:8080'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 2
+      start_period: 0s
+    restart: unless-stopped
+    extra_hosts:
+      - 'host.id:local_ip'
+      - 'host2.id:local_ip'
